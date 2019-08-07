@@ -11,6 +11,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "firebase-admin": "^8.3.0",
-    "leboncoin-api": "0.0.37"
+    "leboncoin-api": "0.0.37",
+    "nodemailer": "^6.3.0"
   }
 }
