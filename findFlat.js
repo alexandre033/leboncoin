@@ -1,8 +1,3 @@
-const cron = require('node-cron');
-const file = require('./findFlat')
-
-
-
 const LBC = require("leboncoin-api");
 const fileData = require('./data.json')
 const nodemailer = require("nodemailer");
@@ -11,8 +6,6 @@ var fs = require('fs')
 let home = process.env['HOME']
 console.log(home)
 
-
-cron.schedule('*/2 * * * *', () => {
 
 function writeToFIle(data){
   const json = JSON.stringify(data, null, 2)
@@ -98,10 +91,7 @@ function buildDataModel(data){
       })
      }
     });
-    console.log('running a task every 5 minutes');
-});
   
-
 
 
 
