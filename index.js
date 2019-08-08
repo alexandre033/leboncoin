@@ -3,6 +3,7 @@ const LBC = require("leboncoin-api");
 const fileData = require('./data.json')
 const nodemailer = require("nodemailer");
 const credentials = require('./credentials.json')
+var cron = require('node-cron');
 var fs = require('fs')
 // var collection = "annonces";
 // admin.initializeApp({
@@ -23,9 +24,14 @@ var fs = require('fs')
 
 
 function writeToFIle(data){
-  fs.writeFile('data.json', JSON.stringify(data, undefined, 2), function(error) {
-    console.log(error)
-   })
+  const json = JSON.stringify(data, null, 2)
+  fs.writeFile('data.json', json, function(error){
+    if(error){
+      console.log(error)
+    } else {
+      console.log('success')
+    }
+  })
 }
 
 function sendEmail(data){
@@ -41,56 +47,70 @@ function sendEmail(data){
     from: 'myserver@gmail.com', 
     to: credentials.EMAIL,
     subject: 'Dernière annonce LBC', 
-    html:   '<p>'+data.title+'</p><br/><a href="'+data.link+'">'+data.link+'</a>'
+    html:   '<p>'+data.title+'</p><br/><p>'+data.date+'</p><br/><p>'+data.desc+'</p><br/><a href="'+data.link+'">'+data.link+'</a>'
   };
   
   transporter.sendMail(mailOptions, function (err, info) {
     if(err)
       console.log(err)
     else
-      return true;
+      console.log(res)
   });
 }
 
 function buildDataModel(data){
   const annonces = {};
   (data || []).map(el => {
+    const date = `${el.date.getDate()}/${el.date.getMonth()}/${el.date.getFullYear()}`
     annonces[el.id] = {
       id: el.id,
-      title: el.title,
+      title: el.title,    
       link: el.link,
-      desc: el.description
+      desc: el.description,
+      date
     }
   });
       return annonces
   }
 
+ 
 
-  var search = new LBC.Search()
+  function findTheFLat(){
+    const notIncluded = []
+    var search = new LBC.Search()
     .setPage(1)
     .setFilter(LBC.FILTERS.PARTICULIER)
     .setCategory("locations")
     .setRegion("gironde")
     .setLocation([{ zipcode: "33000" }, { zipcode: "33300" }])
     .addSearchExtra("price", {min: 800, max: 1000}) 
+    .setSort({sort_by:"date",sort_order:"desc"})
 
-  search.run().then(function(data) {
+    search.run().then( function(data) {
      const annonces = data && buildDataModel(data.results);
      // writeToFIle(annonces)
-     const dataFilekeys = Object.keys(fileData)
-     const annoncesKeys = Object.keys(annonces)
-     annoncesKeys.map(key => {
-       const include = dataFilekeys.includes(key)
+     const dataFileIds = Object.keys(fileData)
+     const annoncesIds = Object.keys(annonces)
+     annoncesIds.forEach(key => {
+       const include = dataFileIds.includes(key)
        if(!include) {
-         console.log(annonces[key])
-        //  sendEmail(annonces[key])
-        //  fs.readFile('data.json', function(err, data){
-        //   const obj = JSON.parse(data)
-        //   obj[annonces[key].id] = annonces[key]
-        //   writeToFIle(obj)
-        // })
+        notIncluded.push({[annonces[key].id]: annonces[key]})
+        sendEmail(annonces[key])
        }
      })
-
+     fs.readFile('data.json', function(err, data){
+       let obj = JSON.parse(data)
+       notIncluded.forEach(el => {
+         return obj = {...obj, ...el}
+        })
+        writeToFIle(obj)
+     })
     });
+  }
+
+  cron.schedule('*/5 * * * *', () => {
+    findTheFLat()
+    console.log('running a task every two minutes');
+  });
+
 
