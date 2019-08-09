@@ -11,6 +11,8 @@
   "dependencies": {
     "express": "^4.17.1",
     "firebase-admin": "^8.3.0",
+    "http-proxy-agent": "^2.1.0",
+    "https-proxy-agent": "^2.2.2",
     "leboncoin-api": "0.0.37",
     "node-cron": "^2.0.3",
     "nodemailer": "^6.3.0"
