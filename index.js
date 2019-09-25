@@ -73,13 +73,13 @@ function sendDataToUser(data) {
     if (!include) {
       console.log("not included", [annonces[key]]);
       fileData[annonces[key].id] = annonces[key];
-      sendEmail(annonces[key]);
+      setTimeout(() => sendEmail(annonces[key]), 1000);
     }
   });
   writeToFIle(fileData);
 }
 
-cron.schedule("*/2 * * * *", () => {
+cron.schedule("*/1 * * * *", () => {
   var search = new LBC.Search()
     .setPage(1)
     .setFilter(LBC.FILTERS.ALL)
@@ -90,8 +90,11 @@ cron.schedule("*/2 * * * *", () => {
     .setSort({ sort_by: "date", sort_order: "desc" });
 
   search.run().then(function(data) {
+    console.log(data)
     data && sendDataToUser(data.results);
+  }, function(error){
+  	console.log(error)
   });
 
-  console.log("running a task every 2 minutes");
+  console.log("running a task every 10 minutes");
 });
