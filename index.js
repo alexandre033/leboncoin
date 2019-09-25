@@ -79,7 +79,7 @@ function sendDataToUser(data) {
   writeToFIle(fileData);
 }
 
-cron.schedule("*/1 * * * *", () => {
+// cron.schedule("*/1 * * * *", () => {
   var search = new LBC.Search()
     .setPage(1)
     .setFilter(LBC.FILTERS.ALL)
@@ -90,11 +90,10 @@ cron.schedule("*/1 * * * *", () => {
     .setSort({ sort_by: "date", sort_order: "desc" });
 
   search.run().then(function(data) {
-    console.log(data)
     data && sendDataToUser(data.results);
   }, function(error){
   	console.log(error)
   });
 
-  console.log("running a task every 10 minutes");
-});
+//   console.log("running a task every 10 minutes");
+// });
